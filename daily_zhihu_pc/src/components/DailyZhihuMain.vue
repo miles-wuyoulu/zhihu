@@ -122,7 +122,6 @@
         </div>
       </div>
     </footer>
-    <!-- <back-to-top/> -->
 
     <el-backtop target=".main">up</el-backtop>
   </div>
@@ -141,49 +140,52 @@ export default {
       stories: [],
     };
   },
-  // computed: {
-  //   w() {
-  //     return document.body.clientWidth || document.documentElement.clientWidth;
-  //   },
-  // },
-  created() {
+
+  methods: {
+    async getAxios() {
+      try {
+        let response1 = await axios.get("api/api/3/stories/latest");
+        this.stories.push(response1.data);
+      } catch (error) {
+        console.log(error);
+      }
+      try {
+        let response1 = await axios.get("api/api/3/news/before/20220409");
+        this.stories.push(response1.data);
+      } catch (error) {
+        console.log(error);
+      }
+
+      try {
+        let response1 = await axios.get("api/api/3/news/before/20220408");
+        this.stories.push(response1.data);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
+  mounted() {
     window.onresize = () => {
       this.w =
         document.body.clientWidth || document.documentElement.clientWidth;
     };
-    // let _this = this;
 
-    axios
-      .get("api/api/3/stories/latest")
-      .then((response) => {
-        this.stories.push(response.data);
-        console.log(this.stories);
-        console.log(response.data);
-        return axios.get("api/api/3/news/before/20220409");
-      })
-      .then((response) => {
-        this.stories.push(response.data);
-        return axios.get("api/api/3/news/before/20220408");
-      })
-      .then((response) => {
-        this.stories.push(response.data);
-      });
-
-    // axios.get("api/api/3/news/before/20220409").then((response) => {
-    //   this.stories.push(response.data);
-    //   console.log(this.stories);
-    //   // console.log(this);
-    //   console.log(response.data);
-    //   // console.log(response);
-    // });
-
-    //   axios.get("api/api/3/news/before/20220408").then((response) => {
-    //   this.stories.push(response.data);
-    //   console.log(this.stories);
-    //   // console.log(this);
-    //   console.log(response.data);
-    //   // console.log(response);
-    // });
+    this.getAxios();
+    // axios
+    //   .get("api/api/3/stories/latest")
+    //   .then((response) => {
+    //     this.stories.push(response.data);
+    //     console.log(this.stories);
+    //     console.log(response.data);
+    //     return axios.get("api/api/3/news/before/20220409");
+    //   })
+    //   .then((response) => {
+    //     this.stories.push(response.data);
+    //     return axios.get("api/api/3/news/before/20220408");
+    //   })
+    //   .then((response) => {
+    //     this.stories.push(response.data);
+    //   });
   },
 };
 </script>

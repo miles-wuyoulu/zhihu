@@ -4,7 +4,10 @@
       <el-row>
         <el-col :span="4"
           ><div class="grid-content bg-purple">
-            <span class="txt1">11</span> <span class="txt2">四月</span>
+            <span class="txt1">{{ stories[0].date.slice(6) }}</span>
+            <span class="txt2">{{
+              month[parseInt(stories[0].date.slice(4, 6)) - 1]
+            }}</span>
           </div></el-col
         >
         <el-col :span="16"
@@ -20,13 +23,13 @@
     </div>
 
     <div class="carousel">
-      <el-carousel trigger="click" height="250px">
+      <el-carousel trigger="click" height="42rem">
         <el-carousel-item
-          v-for="top_stories of stories[0].top_stories"
-          :key="top_stories.id"
+          v-for="top_storie of stories[0].top_stories"
+          :key="top_storie.id"
         >
-          <img :src="top_stories.image" alt="" class="top_img" />
-          <h3 class="top_title">{{ top_stories.title }}</h3>
+          <img :src="top_storie.image" alt="" class="top_img" />
+          <h3 class="top_title">{{ top_storie.title }}</h3>
         </el-carousel-item>
       </el-carousel>
     </div>
@@ -47,6 +50,7 @@
 <script>
 import ShowDailyStories from "./ShowDailyStories.vue";
 const axios = require("axios").default;
+import _ from "lodash";
 
 export default {
   components: { ShowDailyStories },
@@ -55,59 +59,67 @@ export default {
   data() {
     return {
       stories: [],
-      date: +new Date(),
+      date: "",
+      month: [
+        "一月",
+        "二月",
+        "三月",
+        "四月",
+        "五月",
+        "六月",
+        "七月",
+        "八月",
+        "九月",
+        "十月",
+        "十一月",
+        "十二月",
+      ],
       i: 0,
-      flag: true,
     };
   },
 
-  created() {
-    axios.get("api/api/3/stories/latest").then((response) => {
-      this.stories.push(response.data);
-      //     console.log(this.stories);
-      //     console.log(response.data);
-      //    console.log(this.stories[0].top_stories)
-    });
-  },
+  methods: {
+    async getAxios(url) {
+      try {
+        let response = await axios.get(url);
+        let flag = this.stories.some((e) => {
+          return e.date === response.data.date;
+        });
+        if (!flag) {
+          this.stories.push(response.data);
+          this.date = response.data.date;
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
 
-  mounted() {
-    // console.log(this.date)
-    window.addEventListener("scroll", () => {
+    judgeIsScroll() {
       let scrollTop =
         window.pageYOffset ||
         document.documentElement.scrollTop ||
         document.body.scrollTop;
       let scroll = scrollTop - this.i;
       this.i = scrollTop;
-      if (scroll < 0) {
-        // console.log('up')
-      } else {
-        if (this.flag) {
-          setTimeout(() => {
-            this.date -= 24 * 60 * 60 * 1000;
-            let curdate = new Date(this.date);
-            let yy = curdate.getFullYear() + "";
-            let mm = curdate.getMonth() + 1;
-            mm = mm < 10 ? "0" + mm : "" + mm;
+      return scroll > 0 ? true : false;
+    },
+  },
 
-            let dd = curdate.getDate();
-            dd = dd < 10 ? "0" + dd : "" + dd;
+  mounted() {
+    this.getAxios("api/api/3/stories/latest");
+    console.log("hello")
 
-            let format = yy + mm + dd;
-            console.log(typeof format, format);
-
-            axios.get("api/api/3/news/before/" + format).then((response) => {
-              this.stories.push(response.data);
-              //   console.log(this.stories);
-            });
-            this.flag = true;
-          }, 500);
+    //使用第三方库 出现问题：没有办法解决当网络延时，重复发送相同日期的请求，造成重复数据
+    // 这里在收到response的时候做判断
+    window.addEventListener(
+      "scroll",
+      _.throttle(() => {
+        if (this.judgeIsScroll()) {
+          this.getAxios("api/api/3/news/before/" + this.date);
+          console.log("我被执行了");
         }
-
-        this.flag = false;
-        console.log("down");
-      }
-    });
+      }, 500)
+    );
   },
 };
 </script>
@@ -131,7 +143,7 @@ export default {
   top: 0px;
   left: 0px;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .top_title {
@@ -157,15 +169,6 @@ export default {
   background-color: #d3dce6;
 }
 
-/* top */
-/* .el-row {
-    
-
-}
-.el-col {
-
-} */
-
 .bg-purple {
   background: #d3dce6;
 }
@@ -173,7 +176,7 @@ export default {
   background: #e5e9f2;
 }
 .grid-content {
-  height: 50px;
+  height: 70px;
   line-height: 50px;
 
   min-height: 36px;
@@ -188,11 +191,15 @@ export default {
   z-index: 10;
 }
 
+.el-row {
+  height: 55px;
+}
+
 .tips {
-  padding-left: 15px;
-  line-height: 50px;
+  padding-left: 35px;
+  line-height: 61px;
   text-align: left;
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 500;
 }
 
@@ -209,14 +216,14 @@ export default {
 .txt1 {
   position: absolute;
   top: -7px;
-  left: 20px;
-  font-size: 26px;
+  left: 47px;
+  font-size: 40px;
   font-weight: 200;
 }
 .txt2 {
   position: absolute;
-  top: 16px;
-  left: 17px;
-  font-size: 15px;
+  top: 26px;
+  left: 55px;
+  font-size: 25px;
 }
 </style>
